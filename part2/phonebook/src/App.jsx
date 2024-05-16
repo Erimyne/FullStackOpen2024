@@ -28,11 +28,12 @@ const PersonForm = ({
 	</form>
 );
 
-const Persons = ({ persons }) => (
+const Persons = ({ persons, onDelete }) => (
 	<div>
 		{persons.map((person, index) => (
 			<p key={index}>
 				{person.name} {person.number}
+				<button onClick={() => onDelete(person.id)}>Delete</button>
 			</p>
 		))}
 	</div>
@@ -90,6 +91,21 @@ const App = () => {
 		  )
 		: persons;
 
+	const deletePerson = (id) => {
+		const person = persons.find((p) => p.id === id);
+		if (window.confirm(`Delete ${person.name}?`)) {
+			phonebook
+				.deletePerson(id)
+				.then(() => {
+					setPersons(persons.filter((p) => p.id !== id));
+				})
+				.catch((error) => {
+					alert(`the person '${person.name}' was already deleted from server`);
+					setPersons(persons.filter((p) => p.id !== id));
+				});
+		}
+	};
+
 	return (
 		<div>
 			<h2>Phonebook</h2>
@@ -103,7 +119,7 @@ const App = () => {
 				onNumberChange={handleNumberChange}
 			/>
 			<h2>Numbers</h2>
-			<Persons persons={personsToShow} />
+			<Persons persons={personsToShow} onDelete={deletePerson} />
 		</div>
 	);
 };
