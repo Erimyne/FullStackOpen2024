@@ -1,6 +1,6 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import phonebook from './backend/phonebook';
 
 const Filter = ({ value, onChange }) => (
 	<div>
@@ -45,15 +45,9 @@ const App = () => {
 	const [newFilter, setNewFilter] = useState('');
 
 	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get('http://localhost:3001/persons');
-				setPersons(response.data);
-			} catch (error) {
-				console.log(error.message);
-			}
-		};
-		fetchData();
+		phonebook.getAll().then((initialPerson) => {
+			setPersons(initialPerson);
+		});
 	}, []);
 
 	const handleNameChange = (event) => {
@@ -78,15 +72,11 @@ const App = () => {
 				number: newNumber,
 			};
 
-			axios
-				.post('http://localhost:3001/persons', personObject)
-				.then((response) => {
-					setPersons(persons.concat(response.data));
-					setNewName('');
-					setNewNumber('');
-				}).catch((error) => {
-					console.error(error.message)
-				})
+			phonebook.create(personObject).then((returnedPhonebook) => {
+				setPersons(persons.concat(returnedPhonebook));
+				setNewName('');
+				setNewNumber('');
+			});
 		}
 	};
 
