@@ -61,12 +61,32 @@ const App = () => {
 	const addName = (event) => {
 		event.preventDefault();
 		const personExists = persons.find((person) => person.name === newName);
-		const numberExists = persons.find((person) => person.number === newNumber);
 
 		if (personExists) {
-			alert(`${newName}  is already added to phonebook`);
-		} else if (numberExists) {
-			alert(`${newNumber}  is already added to phonebook`);
+			if (
+				window.confirm(
+					`${newName} is already added to phonebook, replace the old number with a new one?`
+				)
+			) {
+				const updatedPerson = { ...personExists, number: newNumber };
+				phonebook
+					.update(personExists.id, updatedPerson)
+					.then((returnedPerson) => {
+						setPersons(
+							persons.map((person) =>
+								person.id !== personExists.id ? person : returnedPerson
+							)
+						);
+						setNewName('');
+						setNewNumber('');
+					})
+					.catch((error) => {
+						alert(
+							`the person '${personExists.name}' was already deleted from server`
+						);
+						setPersons(persons.filter((p) => p.id !== personExists.id));
+					});
+			}
 		} else {
 			const personObject = {
 				name: newName,
