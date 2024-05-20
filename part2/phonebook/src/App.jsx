@@ -1,6 +1,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import { useState, useEffect } from 'react';
 import phonebook from './backend/phonebook';
+import './index.css';
 
 const Filter = ({ value, onChange }) => (
 	<div>
@@ -38,12 +39,28 @@ const Persons = ({ persons, onDelete }) => (
 		))}
 	</div>
 );
+const ErrorMessage = ({ message }) => {
+	if (message === null) {
+		return null;
+	} else {
+		return <div className="error">{message}</div>;
+	}
+};
+const SuccessMessage = ({ message }) => {
+	if (message === null) {
+		return null;
+	}
+
+	return <div className="success">{message}</div>;
+};
 
 const App = () => {
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState('');
 	const [newNumber, setNewNumber] = useState('');
 	const [newFilter, setNewFilter] = useState('');
+	const [errorMessage, setErrorMessage] = useState(null);
+	const [successMessage, setSuccessMessage] = useState(null);
 
 	useEffect(() => {
 		phonebook.getAll().then((initialPerson) => {
@@ -79,10 +96,14 @@ const App = () => {
 						);
 						setNewName('');
 						setNewNumber('');
-					})
+						setSuccessMessage(`Updated ${newName}'s number`);
+						setTimeout(() => {
+							setSuccessMessage(null);
+						});
+					}, 5000)
 					.catch((error) => {
-						alert(
-							`the person '${personExists.name}' was already deleted from server`
+						setErrorMessage(
+							`Information of '${personExists.name}' was already removed from server`
 						);
 						setPersons(persons.filter((p) => p.id !== personExists.id));
 					});
@@ -97,6 +118,10 @@ const App = () => {
 				setPersons(persons.concat(returnedPhonebook));
 				setNewName('');
 				setNewNumber('');
+				setSuccessMessage(`Added ${newName}`);
+				setTimeout(() => {
+					setSuccessMessage(null);
+				}, 5000);
 			});
 		}
 	};
@@ -120,7 +145,12 @@ const App = () => {
 					setPersons(persons.filter((p) => p.id !== id));
 				})
 				.catch((error) => {
-					alert(`the person '${person.name}' was already deleted from server`);
+					setErrorMessage(
+						`Information of '${person.name}' was already removed from server`
+					);
+					setTimeout(() => {
+						setErrorMessage(null);
+					}, 5000);
 					setPersons(persons.filter((p) => p.id !== id));
 				});
 		}
@@ -129,6 +159,8 @@ const App = () => {
 	return (
 		<div>
 			<h2>Phonebook</h2>
+			<ErrorMessage message={errorMessage} />
+			<SuccessMessage message={successMessage} />
 			<Filter value={newFilter} onChange={handleSearchChange} />
 			<h1>Add a new</h1>
 			<PersonForm
